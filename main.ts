@@ -10,6 +10,14 @@ interface CosPicbedPluginSettings {
 	prefix: string;
 }
 
+const DEFAULT_SETTINGS: CosPicbedPluginSettings = {
+	secretId: "",
+	secretKey: "",
+	bucket: "",
+	region: "",
+	prefix: "",
+};
+
 class CosUploader {
 	private cos: any;
 	private settings: CosPicbedPluginSettings;
@@ -139,6 +147,7 @@ class CosPicbedSettingTab extends PluginSettingTab {
 			.setName("Secret Id")
 			.addText((text) =>
 				text
+					.setPlaceholder("xxxxxxxxxxxxxxxxxxxxxx")
 					.setValue(this.plugin.settings.secretId)
 					.onChange(async (value) => {
 						this.plugin.settings.secretId = value.trim();
@@ -150,6 +159,7 @@ class CosPicbedSettingTab extends PluginSettingTab {
 			.setName("Secret Key")
 			.addText((text) =>
 				text
+					.setPlaceholder("xxxxxxxxxxxxxxxxxxxxxx")
 					.setValue(this.plugin.settings.secretKey)
 					.onChange(async (value) => {
 						this.plugin.settings.secretKey = value.trim();
@@ -169,28 +179,23 @@ class CosPicbedSettingTab extends PluginSettingTab {
 					})
 			);
 
-		new Setting(containerEl)
+			new Setting(containerEl)
 			.setName("Region")
-			.addDropdown((dropdown) => {
-				dropdown
-					.addOption("ap-beijing", "Beijing")
-					.addOption("ap-chengdu", "Chengdu")
-					.addOption("ap-nanjing", "Nanjing")
-					.addOption("ap-shanghai", "Shanghai")
-					.addOption("ap-hongkong", "Hongkong")
-					.addOption("ap-guangzhou", "Guangzhou")
-					.addOption("ap-chongqing", "Chongqing")
+			.addText((text) =>
+				text
+					.setPlaceholder("ap-beijing")
 					.setValue(this.plugin.settings.region)
 					.onChange(async (value) => {
 						this.plugin.settings.region = value.trim();
 						await this.plugin.saveSettings();
-					});
-			});
+					})
+			);
 
 		new Setting(containerEl)
 			.setName("Prefix")
 			.addText((text) =>
 				text
+					.setPlaceholder("/")
 					.setValue(this.plugin.settings.prefix)
 					.onChange(async (value) => {
 						let prefix = value.trim().replace(/^\/+|\/+$/g, "");
@@ -304,7 +309,7 @@ export default class CosPicbedPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign(await this.loadData());
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	}
 
 	async saveSettings() {
