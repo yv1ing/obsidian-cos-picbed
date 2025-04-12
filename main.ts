@@ -1,3 +1,4 @@
+import { error } from "console";
 import COS from "cos-js-sdk-v5";
 import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting, TFile, } from "obsidian";
 
@@ -301,6 +302,44 @@ export default class CosPicbedPlugin extends Plugin {
 							});
 					});
 				}
+			})
+		);
+
+		// 右键菜单删除所有图片
+		this.registerEvent(
+			this.app.workspace.on("editor-menu", (menu, editor) => {
+				const self = this;
+
+				menu.addItem((item) => {
+					item.setTitle("Delete all images")
+						.setIcon("trash")
+						.onClick(async () => {
+							const allContent = editor.getValue();
+							const imageMatches = [...allContent.matchAll(/!\[.*?\]\((.*?)\)/g)];
+
+							if (imageMatches.length == 0) {
+								new Notice("No image found!");
+								return;
+							}
+
+							const imageNames = imageMatches.map(match => {
+								return match[1].split('/').pop()!;
+							}).filter(Boolean);
+
+							await Promise.all(
+								imageNames.map(name => {
+									self.uploader.deleteFile(name).catch(error => {
+										new Notice("Image delete failed:" + error.message);
+									})
+								})
+							);
+
+							const newContent = allContent.replace(/!\[.*?\]\((.*?)\)/g, "");
+            				editor.setValue(newContent);
+
+							new Notice(`Deleted ${imageNames.length} images!`);
+						})
+				});
 			})
 		);
 
