@@ -1,8 +1,8 @@
 {
 	"id": "obsidian-cos-picbed",
 	"name": "COS Picbed",
-	"version": "1.0.0",
-	"minAppVersion": "1.0.0",
+	"version": "1.0.2",
+	"minAppVersion": "1.0.2",
 	"description": "This plug-in is used to automatically upload pictures to Tencent Cloud COS, and supports manual deletion of useless pictures to reduce storage space!",
 	"author": "yv1ing",
 	"authorUrl": "https://github.com/yv1ing",
