@@ -9,6 +9,7 @@ interface CosPicbedPluginSettings {
 	bucket: string;
 	region: string;
 	prefix: string;
+	accelerate: boolean;
 }
 
 const DEFAULT_SETTINGS: CosPicbedPluginSettings = {
@@ -17,6 +18,7 @@ const DEFAULT_SETTINGS: CosPicbedPluginSettings = {
 	bucket: "",
 	region: "",
 	prefix: "",
+	accelerate: false,
 };
 
 class CosUploader {
@@ -76,7 +78,11 @@ class CosUploader {
 
 					try {
 						const url = await this.getUrl(fullPath);
-						resolve(url);
+						if (this.settings.accelerate) {
+							resolve(url.replace(this.settings.region, 'accelerate'));
+						} else {
+							resolve(url);
+						}
 					} catch (error) {
 						reject(error);
 						return;
@@ -180,7 +186,7 @@ class CosPicbedSettingTab extends PluginSettingTab {
 					})
 			);
 
-			new Setting(containerEl)
+		new Setting(containerEl)
 			.setName("Region")
 			.addText((text) =>
 				text
@@ -204,6 +210,17 @@ class CosPicbedSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+
+		new Setting(containerEl)
+			.setName("Accelerate")
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.accelerate)
+					.onChange(async (value) => {
+						this.plugin.settings.accelerate = value;
+						await this.plugin.saveSettings();
+					})
+			})
 	}
 }
 
@@ -335,7 +352,7 @@ export default class CosPicbedPlugin extends Plugin {
 							);
 
 							const newContent = allContent.replace(/!\[.*?\]\((.*?)\)/g, "");
-            				editor.setValue(newContent);
+							editor.setValue(newContent);
 
 							new Notice(`Deleted ${imageNames.length} images!`);
 						})
